@@ -13,7 +13,8 @@ test_config = '{
     "delta_start_of_weekday_from_sunday": "1"
   },
   "general": {
-    "maps_query_host": "https://www.google.de/maps"
+    "maps_query_host": "https://www.google.de/maps",
+    "maps_query_parameter": "q"
   },
   "for_testing": {
     "test_conf": "configured"
@@ -58,7 +59,7 @@ RSpec.describe EventLoaderModel do
     let(:fake_today) { Date.parse("2019-01-07") }
     let(:current_start_date) { agenda.current_start_date(current_shift_factor, fake_today) }
     let(:current_end_date) { agenda.current_end_date(current_shift_factor, fake_today) }
-    let(:events) { agenda.agenda_events(current_start_date, current_end_date, fake_today) }
+    let(:events) { agenda.agenda_events(current_start_date, current_end_date) }
     let(:out_of_timeframe) { events.select { |e| (e.dtstart < current_start_date && e.dtend < current_start_date) || (current_end_date < e.dtstart && current_end_date < e.dtend) } }
 
     it "Elements inside of given time-frame" do
@@ -120,10 +121,10 @@ RSpec.describe AgendaModel do
       expect(agenda.path(page_host, test: "testval")).to eq("http://" + page_host + "?test=testval&v=a")
     end
     it "before path" do
-      expect(agenda.before_path(page_host, 0)).to eq("http://" + page_host + "?s=-1&v=a")
+      expect(agenda.previous_path(page_host, 0)).to eq("http://" + page_host + "?s=-1&v=a")
     end
     it "ahead path" do
-      expect(agenda.ahead_path(page_host, 0)).to eq("http://" + page_host + "?s=1&v=a")
+      expect(agenda.upcoming_path(page_host, 0)).to eq("http://" + page_host + "?s=1&v=a")
     end
     it "week shift path" do
       expect(agenda.week_shift_path(page_host, 0, 1)).to eq("http://" + page_host + "?s=1&v=a")
@@ -227,10 +228,10 @@ RSpec.describe MonthModel do
       expect(month.path(page_host, { test: "testval" })).to eq("http://" + page_host + "?test=testval&v=m")
     end
     it "before path" do
-      expect(month.before_path(page_host, 0)).to eq("http://" + page_host + "?s=-1&v=m")
+      expect(month.previous_path(page_host, 0)).to eq("http://" + page_host + "?s=-1&v=m")
     end
     it "ahead path" do
-      expect(month.ahead_path(page_host, 0)).to eq("http://" + page_host + "?s=1&v=m")
+      expect(month.upcoming_path(page_host, 0)).to eq("http://" + page_host + "?s=1&v=m")
     end
     it "month shift path" do
       expect(month.month_shift_path(page_host, 0, 1)).to eq("http://" + page_host + "?s=1&v=m")

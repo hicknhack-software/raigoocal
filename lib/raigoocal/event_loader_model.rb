@@ -7,8 +7,7 @@ class EventLoaderModel
     Event.new(:dtstart, :dtend, :summary, :description, :location, :uid)
   end
 
-  UpdateInterval ||= 2.hours
-
+  # load events prepared for agenda view
   def self.get_agenda_events(google_calendar_base_path, calendar_id, api_key, from, to)
     events = parse_calendar(google_calendar_base_path, calendar_id, api_key, from, to)
     spreaded_events = spread_multiday_events(events, from, to)
@@ -18,6 +17,7 @@ class EventLoaderModel
     end
   end
 
+  # load events for month view
   def self.get_month_events(google_calendar_base_path, calendar_id, api_key, from, to)
     events = parse_calendar(google_calendar_base_path, calendar_id, api_key, from, to)
     
@@ -28,10 +28,12 @@ class EventLoaderModel
 
   private
 
+  # build request path to calendar host (google calendar)
   def self.build_google_request_path(google_calendar_base_path, calendar_id, api_key, from, to)
     google_test_path = "#{google_calendar_base_path}#{calendar_id}/events?key=#{api_key}&singleEvents=true&orderBy=startTime&timeMin=#{CGI.escape(from.to_s)}&timeMax=#{CGI.escape(to.to_s)}"
   end
 
+  # parses json response form calendar host (google calendar)
   def self.parse_calendar(google_calendar_base_path, calendar_id, api_key, from, to)
 
     google_test_path = build_google_request_path(google_calendar_base_path, calendar_id, api_key, from.to_datetime, to.to_datetime)
@@ -43,6 +45,7 @@ class EventLoaderModel
     restructured_events.to_a
   end
 
+  # inserts new event starts for events that are multiple day's long so in the agenda one can see them filling multiple day's
   def self.spread_multiday_events(events, from, to)
     unspreaded_events = events.select{ |event| (event.dtend - event.dtstart).to_i > 0 }
 
